@@ -31,20 +31,22 @@ function CanvasSettings({ canvas }) {
   };
 
   return (
-    <div className="settings darkmode p-4">
-      <div className="w-48 space-y-4">
-        <Input
-          label="Canvas Width"
-          value={String(canvasWidth)}
-          onChange={handleCanvasWidthChange}
-          className="w-full"
-        />
-        <Input
-          label="Canvas Height" 
-          value={String(canvasHeight)}
-          onChange={handleCanvasHeightChange}
-          className="w-full"
-        />
+    <div className="fixed left-4 bottom-4 h-auto w-50 bg-white shadow-lg transform transition-transform duration-300 ease-in-out p-4 rounded-lg">
+      <div className="settings darkmode p-4">
+        <div className="w-48 space-y-4">
+          <Input
+            label="Canvas Width"
+            value={String(canvasWidth)}
+            onChange={handleCanvasWidthChange}
+            className="w-full"
+          />
+          <Input
+            label="Canvas Height"
+            value={String(canvasHeight)}
+            onChange={handleCanvasHeightChange}
+            className="w-full"
+          />
+        </div>
       </div>
     </div>
   );

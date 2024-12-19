@@ -10,12 +10,15 @@ const EditPanel = ({
   handleWidthChange,
   handleHeightChange,
   handleDiameterChange,
-  handleColorChange 
+  handleColorChange,
+  layers = [],
+  selectedLayer,
+  selectLayersInCanvas
 }) => {
   if (!selectedObject) return null;
 
   return (
-    <div className="fixed right-0 top-0 h-screen w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out p-4">
+    <div className="fixed right-4 top-4 h-auto w-48 bg-white shadow-lg transform transition-transform duration-300 ease-in-out p-4 rounded-lg">
       {selectedObject.type === "rect" && (
         <>
           <div className="mb-4">
