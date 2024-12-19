@@ -1,10 +1,15 @@
 import { useState, useEffect, useRef } from "react";
+import * as fabric from "fabric";
 import { Canvas, Rect, Circle } from "fabric";
-import { CircleIcon, SquareIcon, TrashIcon } from "lucide-react";
+import { CircleIcon, SquareIcon, TrashIcon, Image } from "lucide-react";
+import Settings from "./Settings";
+import CanvasSettings from "./CanvasSettings";
+import { HandleObjectMoving, clearGuidelines } from "./SnappingHelpers";
 
 export default function CanvasComp() {
   const canvasRef = useRef(null);
   const [canvas, setCanvas] = useState(null);
+  const [guidelines, setGuidelines] = useState([]);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -17,6 +22,18 @@ export default function CanvasComp() {
       initCanvas.renderAll();
 
       setCanvas(initCanvas);
+
+      initCanvas.on("object:moving", (e) =>
+        HandleObjectMoving(initCanvas, e.target, guidelines, setGuidelines)
+      );
+
+      initCanvas.on("selection:modified", () =>
+        clearGuidelines(initCanvas, guidelines, setGuidelines)
+      );
+
+      initCanvas.on("selection:cleared", () =>
+        clearGuidelines(initCanvas, guidelines, setGuidelines)
+        );
 
       return () => {
         initCanvas.dispose();
@@ -52,13 +69,44 @@ export default function CanvasComp() {
     }
   };
 
-  const clearCanvas = () => {
+  const deleteComponent = () => {
     if (canvas) {
-      canvas.clear();
-      canvas.backgroundColor = "#F7F7F7";
-      canvas.renderAll();
+      const activeObjects = canvas.getActiveObjects();
+      if (activeObjects.length) {
+        activeObjects.forEach((obj) => {
+          canvas.remove(obj);
+        });
+        canvas.discardActiveObject();
+      }
     }
   };
+
+  const handleAddImage = (e) => {
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      const imageElement = new window.Image();
+      imageElement.src = event.target.result;
+      imageElement.onload = function () {
+        const image = new fabric.Image(imageElement);
+        const canvasWidth = canvas.getWidth();
+        const canvasHeight = canvas.getHeight();
+        const scaleX = canvasWidth / imageElement.width;
+        const scaleY = canvasHeight / imageElement.height;
+        const scale = Math.min(scaleX, scaleY);
+
+        image.set({
+          scaleX: scale,
+          scaleY: scale,
+        });
+
+        canvas.add(image);
+        canvas.centerObject(image);
+        canvas.renderAll();
+      };
+    };
+    reader.readAsDataURL(e.target.files[0]);
+  };
+
 
   return (
     <div className="relative min-h-screen bg-gray-50 p-4">
@@ -75,9 +123,21 @@ export default function CanvasComp() {
             size={24}
           />
           <TrashIcon
-            onClick={clearCanvas}
+            onClick={deleteComponent}
             className="cursor-pointer hover:text-red-500 transition-colors"
             size={24}
+          />
+          <Image
+            onClick={() => document.getElementById('imageInput').click()}
+            className="cursor-pointer hover:text-blue-500 transition-colors"
+            size={24}
+          />
+          <input
+            id="imageInput"
+            type="file"
+            accept="image/*"
+            onChange={handleAddImage}
+            className="hidden"
           />
         </div>
       </div>
@@ -87,6 +147,8 @@ export default function CanvasComp() {
           ref={canvasRef}
           className="border-4 border-white rounded-lg shadow-xl"
         />
+        <Settings canvas={canvas} />
+        <CanvasSettings canvas={canvas} />
       </div>
     </div>
   );
